@@ -43,7 +43,7 @@ $(document).ready(function () {
 
     $('#table').on('click', '.actualizar-btn', function () {
         var data = $(this).data('data');
-
+        editarPersona(data);
     });
 
 
@@ -56,19 +56,41 @@ $(document).ready(function () {
             direccion: $('#direccion').val(),
         }
 
+        id = $('#id').val();
 
-        $.ajax({
-            url: "/crudphp/controllers/HomeController.php",
-            method: "POST",
-            dataType: "json",
-            data: data,
-            success: function (response) {
-                cargarTabla();
-            },
-            error: function (xhr, status, error) {
-                console.error("Error en la solicitud POST:", status, error);
-            }
-        });
+        if (id != '') {
+
+
+            console.log(id);
+            $.ajax({
+                url: `/crudphp/controllers/HomeController.php/${id}`,
+                method: "PATCH",
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    cargarTabla();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error en la solicitud PUT:", status, error);
+                }
+            });
+
+        } else {
+
+            $.ajax({
+                url: "/crudphp/controllers/HomeController.php",
+                method: "POST",
+                dataType: "json",
+                data: data,
+                success: function (response) {
+                    cargarTabla();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error en la solicitud POST:", status, error);
+                }
+            });
+        }
         limpiarFormulario();
 
     });
@@ -88,11 +110,17 @@ $(document).ready(function () {
     }
 
     function editarPersona(data) {
-        console.log(data);
+        $('#id').val(data.id);
+        $('#name').val(data.nombre);
+        $('#apellido').val(data.apellido);
+        $('#direccion').val(data.direccion);
+        $('#btnsubmit').text('Editar');
     }
 
 
     function limpiarFormulario() {
+        $('#btnsubmit').text('Submit');
+        $('#id').val('');
         $('#name').val('');
         $('#apellido').val('');
         $('#direccion').val('');

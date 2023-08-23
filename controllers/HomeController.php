@@ -47,7 +47,7 @@ if ($method === 'DELETE') {
     exit;
 }
 
-if ($method === 'PUT') {
+if ($method === 'PATCH') {
     $id = basename($_SERVER['REQUEST_URI']);
 
     if(isset($id)) {

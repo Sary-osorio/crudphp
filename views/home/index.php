@@ -10,6 +10,7 @@
         <div class="row mt-5">
             <div class="col mt-2">
                 <form id="formPersona">
+                    <input type="hidden" id="id">
                     <div class="row">
                         <div class="mb-3 col-6">
                             <label for="name" class="form-label">Nombre</label>
@@ -29,7 +30,7 @@
 
                     </div>
 
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary" id="btnsubmit">Submit</button>
                 </form>
             </div>
             <div class="col mt-2">
