@@ -51,9 +51,14 @@ if ($method === 'PATCH') {
     $id = basename($_SERVER['REQUEST_URI']);
 
     if(isset($id)) {
+        
+        
         $json_data = file_get_contents("php://input");
-        $data = json_decode($json_data, true);
-        $database->update("Persona", $data, "id = $id");     
+        $data = json_decode($json_data, true);      
+        // parse_str(file_get_contents("php://input"), $data);
+        
+        $database->update("Persona", $data, "id = $id"); 
+        
         
     } else {
         echo json_encode([
@@ -79,13 +84,16 @@ if($method === "POST"){
         "direccion" => $_POST['direccion'],
         "sexo" => $_POST['sexo'],
         "fecha_nacimiento" => $_POST['fecha_nacimiento'],
+        "dui" => $_POST['dui'],
     ];
 
-    $database->insert("Persona", $persona);
+    $data = $database->insert("Persona", $persona);
 
-    echo json_encode([
+    print json_encode([
         "status" => 1,
-        "message" => "Persona agregada correctamente"
+        "message" => "Persona agregada correctamente",
+        "database" => $data
+        
     ]);
 
     exit;

@@ -87,7 +87,7 @@ function insert($tbl, $arr) {
     }
 }
 
-function update($tbl, $arr, $cond) {
+function update($tbl, $arr, $cond) {   
     $sql = "UPDATE `$tbl` SET ";
     $fld = array();
     foreach ($arr as $k => $v) {

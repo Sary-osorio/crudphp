@@ -4,3 +4,8 @@ main {
     padding-right: 2rem;
     min-height: 50rem;
 }
+
+input:required::after {
+    content: " *";
+    color: red;
+}
