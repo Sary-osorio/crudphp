@@ -2,19 +2,86 @@
 
 $(function () {
 
+    $.ajax({
+        url: "/crudphp/controllers/HomeController.php/?type=dpto",
+        method: "GET",
+        dataType: "json",
+        success: function (response) {
+            var select = $('#dpto');
+            $.each(response, function (index, option) {
+                select.append($('<option>', {
+                    value: option.ID,
+                    text: option.DepName
+                }));
+            });
+        }
+    });
+
+    $('#dpto').on('change', function () {
+        var dpto = $(this).val();
+        cargarMunicipios(dpto);
+
+    });
+
+    function cargarMunicipios(dpto, muni = "") {
+        console.log(muni);
+        $.ajax({
+            url: `/crudphp/controllers/HomeController.php/?id=${dpto}&type=muni`,
+            method: "GET",
+            dataType: "json",
+            success: function (response) {
+                console.log(response);
+                var select = $('#idmuni');
+                select.empty();
+                $.each(response, function (index, option) {
+                    select.append($('<option>', {
+                        value: option.ID,
+                        text: option.MunName
+                    }));
+                });
+                if (muni != "") {
+                    $('#dpto').val(dpto);
+                    $('#idmuni').val(muni);
+                }
+            }
+        });
+    }
+
+
     function cargarTabla() {
 
         $.ajax({
             url: "/crudphp/controllers/HomeController.php",
             method: "GET",
             dataType: "json",
+            // data: {
+            //     page: 1,
+            //     limit: 10
+            // },
             success: function (response) {
-
                 dropTable();
-
                 new DataTable("#table", {
+                    // paging: true,
+                    // pageLength: 10,
                     language: {
-                        "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+                        "decimal": "",
+                        "emptyTable": "No hay información",
+                        "info": "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
+                        "infoEmpty": "Mostrando 0 to 0 of 0 Entradas",
+                        "infoFiltered": "(Filtrado de _MAX_ total entradas)",
+                        "infoPostFix": "",
+                        "thousands": ",",
+                        "lengthMenu": "Mostrar _MENU_ Entradas",
+                        "loadingRecords": "Cargando...",
+                        "processing": "Procesando...",
+                        "search": "Buscar:",
+                        "zeroRecords": "Sin resultados encontrados",
+                        "paginate": {
+                            "first": "Primero",
+                            "last": "Ultimo",
+                            "next": "Siguiente",
+                            "previous": "Anterior"
+                        }
                     },
                     data: response,
                     columns: [
@@ -25,7 +92,8 @@ $(function () {
                         { data: "direccion" },
                         { data: "sexo" },
                         { data: "fecha_nacimiento" },
-
+                        { data: "municipio" },
+                        { data: "nombredpto" },
                         {
                             data: null,
                             render: function (data, type, row) {
@@ -63,6 +131,7 @@ $(function () {
 
     $('#table').on('click', '.actualizar-btn', function () {
         var data = $(this).data('data');
+        console.log(data);
         editarPersona(data);
     });
 
@@ -72,7 +141,8 @@ $(function () {
         endDate: "31/12/2006",
         language: "es",
         orientation: "bottom auto",
-        language: 'es'
+        autoclose: true,
+        locale: 'es',
     });
 
     $('#dui').mask('99999999-9');
@@ -105,109 +175,48 @@ $(function () {
                 sexo = 'Masculino'
             }
 
-            // var data = $(this).serialize();
-
-            var data = {
-                dui: $('#dui').val(),
-                nombre: $('#nombre').val(),
-                apellido: $('#apellido').val(),
-                sexo: sexo,
-                fecha_nacimiento: $('#datepicker').val(),
-                direccion: $('#direccion').val(),
-
-            };
-
+            var data = $(this).serialize();
 
             id = $('#id').val();
 
-            if (id != '') {
-                Swal.fire({
-                    title: 'Seguro que deseas modificar los datos de esta persona?',
-                    showCancelButton: true,
-                    confirmButtonText: 'Aceptar',
 
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        console.log(data);
-                        $.ajax({
-                            url: `/crudphp/controllers/HomeController.php/${id}`,
-                            method: "PATCH",
-                            dataType: "json",
-                            contentType: "application/json",
-                            data: JSON.stringify(data),
-                            success: function (response) {
-                                cargarTabla();
+            Swal.fire({
+                title: 'Seguro que deseas registrar los datos de esta persona?',
+                showCancelButton: true,
+                confirmButtonText: 'Aceptar',
 
-                            },
-                            complete: function (response) {
+            }).then((result) => {
+                if (result.isConfirmed) {
 
-                                if (response.status === 200) {
+                    $.ajax({
+                        url: "/crudphp/controllers/HomeController.php",
+                        method: "POST",
+                        dataType: "json",
+                        data: data,
+                        success: function (response) {
 
-                                    limpiarFormulario();
-                                    exito();
-                                } else {
+                            cargarTabla();
+                        },
+                        complete: function (response) {
+                            if (response.status === 200) {
 
-                                    limpiarFormulario();
-                                    error();
-                                }
-                            },
+                                limpiarFormulario();
+                                exito();
+                            } else {
 
-                            error: function (xhr, status, error) {
-                                console.error("Error en la solicitud Patch:", status, error);
+                                limpiarFormulario();
+                                error();
                             }
-                        });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error en la solicitud POST:", status, error);
+                        }
+                    });
+                } else if (result.isDenied) {
+                    Swal.fire('Changes are not saved', '', 'info')
+                }
+            })
 
-                    } else if (result.isDenied) {
-                        Swal.fire('Changes are not saved', '', 'info')
-                    }
-                })
-
-                // $.ajax({
-                // }).done(function(retorno) {
-                // }).fail(function(e){
-                // }).always(function(e){
-                // });
-
-
-
-            } else {
-                Swal.fire({
-                    title: 'Seguro que deseas registrar los datos de esta persona?',
-                    showCancelButton: true,
-                    confirmButtonText: 'Aceptar',
-
-                }).then((result) => {
-                    if (result.isConfirmed) {
-
-                        $.ajax({
-                            url: "/crudphp/controllers/HomeController.php",
-                            method: "POST",
-                            dataType: "json",
-                            data: data,
-                            success: function (response) {
-                                console.log(response);
-                                cargarTabla();
-                            },
-                            complete: function (response) {
-                                if (response.status === 200) {
-
-                                    limpiarFormulario();
-                                    exito();
-                                } else {
-
-                                    limpiarFormulario();
-                                    error();
-                                }
-                            },
-                            error: function (xhr, status, error) {
-                                console.error("Error en la solicitud POST:", status, error);
-                            }
-                        });
-                    } else if (result.isDenied) {
-                        Swal.fire('Changes are not saved', '', 'info')
-                    }
-                })
-            }
 
 
         }
@@ -293,7 +302,7 @@ $(function () {
 
 
     function eliminarPersona(id) {
-        console.log(id);
+
         $.ajax({
             url: `/crudphp/controllers/HomeController.php/${id}`,
             method: "DELETE",
@@ -314,6 +323,7 @@ $(function () {
 
     function editarPersona(data) {
         console.log(data);
+        $('#proceso').val('actualizar');
         $('#id').val(data.id);
         $('#dui').val(data.dui);
         $('#nombre').val(data.nombre);
@@ -327,10 +337,13 @@ $(function () {
         } else if (data.sexo === 'Masculino') {
             $('#masculino').prop('checked', true);
         }
+        cargarMunicipios(data.dpto, data.idmuni);
+
     }
 
 
     function limpiarFormulario() {
+        $('#proceso').val('insertar');
         $('#btnsubmit').text('Submit');
         $('#id').val('');
         $('#nombre').val('');

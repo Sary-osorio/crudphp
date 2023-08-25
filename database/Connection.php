@@ -29,11 +29,15 @@ function customSelect($sql) {
     }
 }
 
-function select($tbl, $cond='') {
-    $sql = "SELECT * FROM $tbl";
+function select($tbl, $cond="", $param="") {
+    $param = $param=="" ? "" : $param;
+
+    $sql = "SELECT * $param FROM $tbl";
+    
     if ($cond!='') {
         $sql .= " WHERE $cond ";
     }
+    // $sql .= " LIMIT $limit OFFSET $offset";
 
     try {
          $stmt = $this->conn->prepare($sql);
@@ -41,7 +45,9 @@ function select($tbl, $cond='') {
         $rows = $stmt->fetchAll();
         return $rows;
     } catch (PDOException $e) {
+
         echo 'Error: ' . $e->getMessage();
+        return $sql;
     }
 }
 function num_rows($rows){
@@ -88,7 +94,7 @@ function insert($tbl, $arr) {
 }
 
 function update($tbl, $arr, $cond) {   
-    $sql = "UPDATE `$tbl` SET ";
+    $sql = "UPDATE $tbl SET ";
     $fld = array();
     foreach ($arr as $k => $v) {
         $fld[] = "`$k` = '$v'";
